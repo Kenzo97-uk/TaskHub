@@ -1,0 +1,26 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  server:
+    build: ./server
+    environment:
+      - API_KEY=${API_KEY:-changeme-super-secret}
+      - REDIS_URL=redis://redis:6379/0
+      - APP_NAME=PAR TaskHub
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
+
+  worker:
+    build: ./worker
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_PATH=/data/events.log
+    depends_on:
+      - redis
+    volumes:
+      - ./data:/data
